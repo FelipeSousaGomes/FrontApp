@@ -1,0 +1,277 @@
+<app-sidebar></app-sidebar>
+
+<div class="title-container">
+  <h3 [ngStyle]="{ color: 'var(--primary-color)' }">Lista de metas</h3>
+</div>
+
+<div class="btn-container">
+  <p-button label="Relatório Mensal" (click)="showDataDialog()"></p-button>
+  <p-button label="Relatório por Grupo" (click)="showGroupDialog()"></p-button>
+  <p-button label="Relatório por Categoria" (click)="showCategoriaDialog()"></p-button>
+</div>
+
+
+<div class="centered-container">
+  <div class="card table-container">
+    <p-toast />
+    <p-confirmDialog />
+    <p-table
+      [value]="lancamentos"
+      [tableStyle]="{ 'min-width': '40rem' }"
+      [scrollable]="true"
+      scrollHeight="380px"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nome</th>
+          <th>Descrição</th>
+          <th>Valor</th>
+          <th>Tipo</th>
+          <th>Grupo</th>
+          <th>Data</th>
+          <th>Ações</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-lancamento>
+        <tr>
+          <td>{{ lancamento.nome }}</td>
+          <td>{{ lancamento.descricao }}</td>
+          <td>{{ lancamento.valor }}</td>
+          <td>{{ lancamento.tipo }}</td>
+          <td>{{ lancamento.grupo.nome }}</td>
+          <td>{{ lancamento.data }}</td>
+
+          <td>
+            <p-button
+              icon="pi pi-pencil"
+              [rounded]="true"
+              (click)="editarLancamento(lancamento)"
+            ></p-button>
+            <p-button
+              icon="pi pi-trash"
+              [rounded]="true"
+              (click)="confirmacaoExclusao($event, lancamento.id)"
+            ></p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<div class="card flex justify-content-center">
+  <p-dialog
+    header="Cadastrar lançamento"
+    [modal]="true"
+    [(visible)]="visible"
+    [style]="{ width: '30rem', height: '30rem' }"
+    [draggable]="false"
+    [resizable]="false"
+
+  >
+    <div class="centered-container">
+      <div class="flex-column gap-2">
+
+        <p-floatLabel>
+          <input pInputText id="nome" [(ngModel)]="lancamentoSave.nome" />
+          <label for="nome">Nome</label>
+        </p-floatLabel>
+
+        <p-floatLabel>
+          <input pInputText id="descricao" [(ngModel)]="lancamentoSave.descricao" />
+          <label for="descricao">Descricao</label>
+        </p-floatLabel>
+
+        <p-floatLabel>
+          <input pInputText id="valor" type="number" [(ngModel)]="lancamentoSave.valor" />
+          <label for="valor">Valor</label>
+        </p-floatLabel>
+
+        <p-floatLabel>
+          <p-inputMask
+            mask="99/99/9999"
+            [(ngModel)]="lancamentoSave.data"
+            id="data_input"
+            placeholder="DD/MM/YYYY"/>
+
+          <label for="data_input">Data</label>
+        </p-floatLabel>
+
+        <p-dropdown
+        [options]="tipos"
+        [(ngModel)]="tipoSelecionado"
+        optionLabel="label"
+        inputId="float-label"
+        [virtualScroll]="true"
+        [virtualScrollItemSize]="46"
+        [scrollHeight]="'150px'"
+        class="fixed-dropdown"
+        (onChange)="onTipoChange($event)"
+        [style]="{ width: '300px' }"
+        [showClear]="true"
+        placeholder="Selecione um tipo">
+      </p-dropdown>
+
+      <p-dropdown
+        [options]="categorias"
+        [(ngModel)]="categoriaSelecionada"
+        optionLabel="label"
+        inputId="float-label"
+        [virtualScroll]="true"
+        [virtualScrollItemSize]="46"
+        [scrollHeight]="'150px'"
+        class="fixed-dropdown"
+        (onChange)="onCategoriaChange($event)"
+        [style]="{ width: '300px' }"
+        [showClear]="true"
+        placeholder="Selecione uma categoria">
+      </p-dropdown>
+
+
+          <p-dropdown
+            [options]="grupos"
+            [(ngModel)]="grupoSelecionado"
+            optionLabel="nome"
+            inputId="float-label"
+            [virtualScroll]="true"
+            [virtualScrollItemSize]="46"
+            [scrollHeight]="'150px'"
+            (onChange)="onGrupoChange($event)"
+            class="fixed-dropdown"
+            [style]="{ width: '300px' }"
+            [showClear]="true"
+            placeholder="Selecione um grupo"
+          />
+
+          <div style="margin-top: 75px">
+            <p-button
+              label="Voltar"
+              severity="secondary"
+              (onClick)="visible = false"
+              (click)="limparCampos()"
+            />
+            <p-button label="Salvar" (onClick)="cadastrarLancamento()" />
+          </div>
+      </div>
+    </div>
+
+  </p-dialog>
+</div>
+
+<div class="card flex justify-content-center">
+  <p-dialog
+    header="Escolha o mês para o filtro do relatório"
+    [modal]="true"
+    [(visible)]="visibleData"
+    [style]="{ width: '30rem', height: '30rem' }"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <div class="centered-container">
+        <p-floatLabel>
+          <p-inputMask
+            mask="99/9999"
+            [(ngModel)]="dataFiltro"
+            id="data_input"
+            placeholder="MM/YYYY"/>
+            
+          <label for="data_input">Data</label>
+        </p-floatLabel> 
+        <p-dropdown
+        [options]="grupos"
+        [(ngModel)]="grupoRelatorio"
+        optionLabel="nome"
+        inputId="float-label"
+        [virtualScroll]="true"
+        [virtualScrollItemSize]="46"
+        [scrollHeight]="'150px'"
+        (onChange)="onGrupoChange($event)"
+        class="fixed-dropdown"
+        [style]="{ width: '300px' }"
+        [showClear]="true"
+        placeholder="Selecione um grupo"
+      />
+
+        <p-button label="Gerar" (onClick)="gerarRelatorioMensal()" />
+      </div>
+  </p-dialog>
+
+  <div class="card flex justify-content-center">
+    <p-dialog
+      header="Escolha o grupo para o filtro do relatório"
+      [modal]="true"
+      [(visible)]="visibleGroup"
+      [style]="{ width: '30rem', height: '30rem' }"
+      [draggable]="false"
+      [resizable]="false"
+    >
+          <p-dropdown
+          [options]="grupos"
+          [(ngModel)]="grupoRelatorio"
+          optionLabel="nome"
+          inputId="float-label"
+          [virtualScroll]="true"
+          [virtualScrollItemSize]="46"
+          [scrollHeight]="'150px'"
+          (onChange)="onGrupoChange($event)"
+          class="fixed-dropdown"
+          [style]="{ width: '300px' }"
+          [showClear]="true"
+          placeholder="Selecione um grupo"
+        />
+  
+          <p-button label="Gerar" (onClick)="gerarRelatorioPorGrupo()" />
+
+    </p-dialog>
+    <div class="card flex justify-content-center">
+      <p-dialog
+        header="Escolha a categoria para o filtro do relatório"
+        [modal]="true"
+        [(visible)]="visibleCategoria"
+        [style]="{ width: '30rem', height: '30rem' }"
+        [draggable]="false"
+        [resizable]="false"
+      >
+      <p-dropdown
+      [options]="categorias"
+      [(ngModel)]="categoriaSelecionada"
+      optionLabel="label"
+      inputId="float-label"
+      [virtualScroll]="true"
+      [virtualScrollItemSize]="46"
+      [scrollHeight]="'150px'"
+      class="fixed-dropdown"
+      (onChange)="onCategoriaChange($event)"
+      [style]="{ width: '300px' }"
+      [showClear]="true"
+      placeholder="Selecione uma categoria">
+    </p-dropdown>
+
+            <p-dropdown
+            [options]="grupos"
+            [(ngModel)]="grupoRelatorio"
+            optionLabel="nome"
+            inputId="float-label"
+            [virtualScroll]="true"
+            [virtualScrollItemSize]="46"
+            [scrollHeight]="'150px'"
+            (onChange)="onGrupoChange($event)"
+            class="fixed-dropdown"
+            [style]="{ width: '300px' }"
+            [showClear]="true"
+            placeholder="Selecione um grupo"
+          />
+    
+            <p-button label="Gerar" (onClick)="gerarRelatorioPorCategoria()" />
+      </p-dialog>
+  
+
+<div class="btn-container">
+  <p-button
+    label="Voltar"
+    severity="secondary"
+    [raised]="true"
+    [routerLink]="['/']"
+  ></p-button>
+  <p-button label="Cadastrar" [raised]="true" (click)="showDialog()"></p-button>
+</div>
